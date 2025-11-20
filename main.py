@@ -28,7 +28,12 @@ class Query(BaseModel):
     question: str
 
 @app.post("/research")
-async def deep_research(q: Query):
+async def deep_research(q: Query, request: Request):
+    # 添加调试信息
+    payment_header = request.headers.get("X-PAYMENT")
+    print(f"🔍 Received X-PAYMENT header: {payment_header}")
+    print(f"🔍 All headers: {dict(request.headers)}")
+    
     resp = client.chat.completions.create(
         model="sonar-large-online",
         messages=[{"role": "user", "content": q.question}],
@@ -39,3 +44,12 @@ async def deep_research(q: Query):
 @app.get("/")
 async def root():
     return {"message": "DeepResearch x402 API – POST /research with payment"}
+
+# 添加一个调试端点来检查支付头格式
+@app.post("/debug-payment")
+async def debug_payment(request: Request):
+    payment_header = request.headers.get("X-PAYMENT")
+    return {
+        "received_x_payment": payment_header,
+        "all_headers": dict(request.headers)
+    }
